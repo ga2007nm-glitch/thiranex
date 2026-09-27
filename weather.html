@@ -1,0 +1,293 @@
+ <!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Primary Meta Tags -->
+  <title>Weather Dashboard | Gagana N M - Async JavaScript &amp; REST APIs</title>
+  <meta name="title" content="Weather Dashboard | Gagana N M - Async JavaScript &amp; REST APIs">
+  <meta name="description" content="A real-time weather dashboard built with the Fetch API, async/await, comprehensive error handling, and dynamic rendering of nested JSON returned from a public REST API.">
+  <meta name="keywords" content="JavaScript Weather App, Fetch API, async await, REST API, JSON parsing, Open-Meteo, Error Handling">
+  <meta name="author" content="Gagana N M">
+  <meta name="robots" content="index, follow">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://www.gagananm.dev/weather.html">
+  <meta property="og:title" content="Weather Dashboard | Gagana N M">
+  <meta property="og:description" content="Live weather metrics fetched asynchronously from a public REST API and rendered from nested JSON.">
+
+  <!-- Canonical URL -->
+  <link rel="canonical" href="https://www.gagananm.dev/weather.html">
+
+  <link rel="stylesheet" href="style.css">
+  <!--
+    Theme boot: resolves the saved theme (or the OS preference) BEFORE first
+    paint so the page never flashes the wrong palette. Kept inline and tiny
+    on purpose — an external file here would re-introduce the flash.
+  -->
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('theme');
+        var prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+        document.documentElement.setAttribute('data-theme', saved || (prefersLight ? 'light' : 'dark'));
+      } catch (e) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+  </script>
+</head>
+<body>
+
+  <!-- Skip Link -->
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <!-- Header Landmark -->
+  <header role="banner">
+    <nav aria-label="Main Navigation">
+      <a href="index.html">
+        <strong>Gagana N M</strong>
+      </a>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="project.html">Projects</a></li>
+        <li><a href="todo.html">Task Manager</a></li>
+        <li><a href="weather.html" aria-current="page">Weather</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+
+      <!-- Light / dark mode switch -->
+      <button type="button" class="theme-toggle" id="theme-toggle"
+        aria-label="Switch to light theme" aria-pressed="false" title="Toggle colour theme">
+        <svg class="icon icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false">
+          <circle cx="12" cy="12" r="4.5"></circle>
+          <path d="M12 1.5v2.5M12 20v2.5M4.2 4.2l1.8 1.8M18 18l1.8 1.8M1.5 12H4M20 12h2.5M4.2 19.8L6 18M18 6l1.8-1.8"></path>
+        </svg>
+        <svg class="icon icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+          <path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.6 6.6 0 0 0 9.8 9.8z"></path>
+        </svg>
+      </button>
+    </nav>
+  </header>
+
+  <!-- Main Content Landmark -->
+  <main id="main-content" tabindex="-1">
+
+    <header class="page-header">
+      <p class="eyebrow">Asynchronous JavaScript &amp; RESTful APIs</p>
+      <h1>Weather Dashboard</h1>
+      <p>
+        Search any city and this dashboard fetches live conditions over the network
+        using the <code>Fetch API</code> and <code>async/await</code>. The nested JSON
+        response is parsed, validated, and rendered into the metrics below — with
+        every failure mode (no network, bad city, rate limit, malformed payload)
+        surfaced as a readable message instead of a silent blank screen.
+      </p>
+      <p class="weather-source">
+        <small>Data source: <a href="https://open-meteo.com/" rel="external noopener noreferrer" target="_blank">Open-Meteo</a> — free, key-less public REST API.</small>
+      </p>
+    </header>
+
+    <!-- ==================================================================
+         SEARCH
+         ================================================================== -->
+    <section class="weather-panel" aria-labelledby="search-heading">
+      <h2 id="search-heading">Find a City</h2>
+
+      <form id="weather-form" class="weather-form" novalidate>
+        <div class="weather-field">
+          <label for="city-input">City name</label>
+          <input
+            type="text"
+            id="city-input"
+            name="city"
+            placeholder="e.g. Bengaluru"
+            autocomplete="off"
+            maxlength="120"
+            spellcheck="false"
+            aria-describedby="city-hint"
+          >
+          <span id="city-hint" class="field-hint">
+            <small>Press Enter or use the button. Any city worldwide.</small>
+          </span>
+        </div>
+
+        <button type="submit" id="weather-submit">Get Weather</button>
+
+        <button type="button" class="btn btn--ghost" id="weather-geo" title="Use my current location">
+          Use My Location
+        </button>
+      </form>
+
+      <!-- Quick-pick shortcuts for the most recently searched cities -->
+      <div class="weather-recent" id="weather-recent" hidden>
+        <span class="weather-recent__label" id="recent-label">Recent:</span>
+        <div class="weather-recent__chips" id="recent-chips" role="group" aria-labelledby="recent-label"></div>
+      </div>
+
+      <!-- Validation / status announcements for assistive technology -->
+      <p id="weather-status" class="form-status" role="status" aria-live="polite" aria-atomic="true"></p>
+    </section>
+
+    <!-- ==================================================================
+         RESULTS
+         ================================================================== -->
+    <section class="weather-panel" aria-labelledby="results-heading" aria-busy="false" id="results-panel">
+      <h2 id="results-heading" class="visually-hidden">Current Conditions</h2>
+
+      <!-- Loading state -->
+      <div id="weather-loading" class="weather-loading" hidden>
+        <span class="spinner" aria-hidden="true"></span>
+        <p>Fetching live data&hellip;</p>
+      </div>
+
+      <!-- Error state -->
+      <div id="weather-error" class="weather-error" role="alert" hidden>
+        <h3 id="weather-error-title">Something went wrong</h3>
+        <p id="weather-error-detail"></p>
+        <button type="button" class="btn btn--ghost btn--sm" id="weather-retry" hidden>Try again</button>
+      </div>
+
+      <!-- Empty / initial state -->
+      <div id="weather-empty" class="empty-state">
+        <p>No city selected yet.</p>
+        <p><small>Search for a city above to load live temperature, humidity and wind data.</small></p>
+      </div>
+
+      <!-- Populated by renderWeather() from the parsed JSON payload -->
+      <div id="weather-result" class="weather-result" hidden>
+
+        <!-- Place + condition -->
+        <div class="weather-hero">
+          <div class="weather-hero__text">
+            <p class="weather-place" id="w-place">&mdash;</p>
+            <p class="weather-meta" id="w-meta">&mdash;</p>
+            <p class="weather-condition" id="w-condition">&mdash;</p>
+          </div>
+          <div class="weather-hero__temp">
+            <span class="weather-emoji" id="w-emoji" aria-hidden="true">&#9925;</span>
+            <span class="weather-temp" id="w-temp">&mdash;</span>
+            <span class="weather-feels" id="w-feels">&mdash;</span>
+          </div>
+        </div>
+
+        <!-- Headline metrics -->
+        <ul class="weather-metrics" aria-label="Current weather metrics">
+          <li class="metric">
+            <span class="metric__label">Humidity</span>
+            <span class="metric__value" id="w-humidity">&mdash;</span>
+            <span class="metric__sub" id="w-humidity-sub">&mdash;</span>
+          </li>
+          <li class="metric">
+            <span class="metric__label">Wind Speed</span>
+            <span class="metric__value" id="w-wind">&mdash;</span>
+            <span class="metric__sub" id="w-wind-sub">&mdash;</span>
+          </li>
+          <li class="metric">
+            <span class="metric__label">Precipitation</span>
+            <span class="metric__value" id="w-precip">&mdash;</span>
+            <span class="metric__sub" id="w-precip-sub">&mdash;</span>
+          </li>
+          <li class="metric">
+            <span class="metric__label">Pressure</span>
+            <span class="metric__value" id="w-pressure">&mdash;</span>
+            <span class="metric__sub" id="w-pressure-sub">&mdash;</span>
+          </li>
+          <li class="metric">
+            <span class="metric__label">Cloud Cover</span>
+            <span class="metric__value" id="w-clouds">&mdash;</span>
+            <span class="metric__sub" id="w-clouds-sub">&mdash;</span>
+          </li>
+          <li class="metric">
+            <span class="metric__label">UV Index</span>
+            <span class="metric__value" id="w-uv">&mdash;</span>
+            <span class="metric__sub" id="w-uv-sub">&mdash;</span>
+          </li>
+        </ul>
+
+        <!-- Sunrise / sunset strip -->
+        <div class="weather-sun" id="w-sun-row">
+          <div class="sun-item">
+            <span class="sun-item__label">Sunrise</span>
+            <span class="sun-item__value" id="w-sunrise">&mdash;</span>
+          </div>
+          <div class="sun-item">
+            <span class="sun-item__label">Sunset</span>
+            <span class="sun-item__value" id="w-sunset">&mdash;</span>
+          </div>
+          <div class="sun-item">
+            <span class="sun-item__label">Daylight</span>
+            <span class="sun-item__value" id="w-daylight">&mdash;</span>
+          </div>
+        </div>
+
+        <!-- Next 24 hours, built from the hourly arrays -->
+        <div class="weather-hourly">
+          <h3>Next 24 Hours</h3>
+          <ul class="hourly-strip" id="w-hourly" aria-label="Hourly forecast"></ul>
+        </div>
+
+        <p class="weather-updated">
+          <small>Last updated <time id="w-updated" datetime="">just now</time> &middot; refreshed automatically every 5 minutes</small>
+        </p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer Landmark -->
+  <footer role="contentinfo">
+    <nav aria-label="Footer Social Links">
+      <ul>
+        <li><a href="https://github.com" rel="external noopener noreferrer" target="_blank" aria-label="GitHub Profile (opens in a new tab)">GitHub</a></li>
+        <li><a href="https://linkedin.com" rel="external noopener noreferrer" target="_blank" aria-label="LinkedIn Profile (opens in a new tab)">LinkedIn</a></li>
+      </ul>
+    </nav>
+    <p><small>&copy; <time datetime="2026">2026</time> Gagana N M. All rights reserved.</small></p>
+  </footer>
+
+  <!-- Theme toggle controller -->
+  <script>
+    (function () {
+      var root = document.documentElement;
+      var toggle = document.getElementById('theme-toggle');
+      if (!toggle) return;
+
+      var media = window.matchMedia('(prefers-color-scheme: light)');
+
+      function sync() {
+        var isDark = root.getAttribute('data-theme') !== 'light';
+        toggle.setAttribute('aria-label', isDark ? 'Switch to light theme' : 'Switch to dark theme');
+        toggle.setAttribute('aria-pressed', isDark ? 'false' : 'true');
+      }
+
+      toggle.addEventListener('click', function () {
+        var next = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+        root.setAttribute('data-theme', next);
+        try { localStorage.setItem('theme', next); } catch (e) {}
+        sync();
+      });
+
+      media.addEventListener('change', function (event) {
+        var saved = null;
+        try { saved = localStorage.getItem('theme'); } catch (e) {}
+        if (!saved) {
+          root.setAttribute('data-theme', event.matches ? 'light' : 'dark');
+          sync();
+        }
+      });
+
+      sync();
+    })();
+  </script>
+
+  <!-- Application logic -->
+  <script src="weather.js"></script>
+
+</body>
+</html>

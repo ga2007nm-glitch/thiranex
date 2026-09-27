@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Contact Gagana N M | AI/ML Engineer</title>
+  <meta name="description" content="Get in touch with Gagana N M for AI/ML development, software collaboration, or accessibility inquiries.">
+  <meta name="robots" content="index, follow">
+
+  <link rel="canonical" href="https://www.gagananm.dev/contact.html">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Skip Link -->
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <!-- Header Landmark -->
+  <header role="banner">
+    <nav aria-label="Main Navigation">
+      <a href="index.html">
+        <strong>Gagana N M</strong>
+      </a>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="project.html">Projects</a></li>
+        <li><a href="todo.html">Task Manager</a></li>
+        <li><a href="weather.html">Weather</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="contact.html" aria-current="page">Contact</a></li>
+      </ul>
+
+      <!-- Light / dark mode switch: swaps CSS custom properties on <html> -->
+      <button type="button" class="theme-toggle" id="theme-toggle"
+        aria-label="Switch to light theme" aria-pressed="false" title="Toggle colour theme">
+        <svg class="icon icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false">
+          <circle cx="12" cy="12" r="4.5"></circle>
+          <path d="M12 1.5v2.5M12 20v2.5M4.2 4.2l1.8 1.8M18 18l1.8 1.8M1.5 12H4M20 12h2.5M4.2 19.8L6 18M18 6l1.8-1.8"></path>
+        </svg>
+        <svg class="icon icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+          <path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.6 6.6 0 0 0 9.8 9.8z"></path>
+        </svg>
+      </button>
+    </nav>
+  </header>
+
+  <!-- Main Content Landmark -->
+  <main id="main-content" tabindex="-1">
+
+    <header>
+      <h1>Contact Me</h1>
+      <p>Use the form below to send a message regarding projects, hackathon collaborations, or inquiries.</p>
+    </header>
+
+    <!-- Screen Reader Status Live Region -->
+    <div id="form-status" aria-live="polite" aria-atomic="true">
+      <!-- Success/Error alert messages will be read by screen readers here -->
+    </div>
+
+    <!-- Tab-Navigable Contact Form -->
+    <section aria-labelledby="form-heading">
+      <h2 id="form-heading">Send a Message</h2>
+
+      <form action="/submit-contact" method="POST" novalidate>
+
+        <p><small>Fields marked with an asterisk (<span aria-hidden="true">*</span>) are required.</small></p>
+
+        <!-- Name Input -->
+        <div>
+          <label for="full-name">
+            Full Name <span aria-hidden="true">*</span>
+          </label>
+          <input
+            type="text"
+            id="full-name"
+            name="name"
+            required
+            autocomplete="name"
+            aria-required="true"
+            aria-describedby="name-hint"
+          >
+          <span id="name-hint"><small>Enter your first and last name.</small></span>
+        </div>
+
+        <!-- Email Input -->
+        <div>
+          <label for="email-address">
+            Email Address <span aria-hidden="true">*</span>
+          </label>
+          <input
+            type="email"
+            id="email-address"
+            name="email"
+            required
+            autocomplete="email"
+            aria-required="true"
+            aria-describedby="email-hint"
+          >
+          <span id="email-hint"><small>Used exclusively to respond to your message.</small></span>
+        </div>
+
+        <!-- Subject Select Dropdown -->
+        <div>
+          <label for="subject-type">
+            Inquiry Subject <span aria-hidden="true">*</span>
+          </label>
+          <select id="subject-type" name="subject" required aria-required="true">
+            <option value="" disabled selected>-- Select an option --</option>
+            <option value="collaboration">Project Collaboration</option>
+            <option value="hackathon">Hackathon / Team Opportunity</option>
+            <option value="general">General Inquiry</option>
+          </select>
+        </div>
+
+        <!-- Message Textarea -->
+        <div>
+          <label for="user-message">
+            Your Message <span aria-hidden="true">*</span>
+          </label>
+          <textarea
+            id="user-message"
+            name="message"
+            rows="6"
+            required
+            aria-required="true"
+            aria-describedby="message-hint"
+          ></textarea>
+          <span id="message-hint"><small>Include details regarding your project or inquiry.</small></span>
+        </div>
+
+        <!-- Radio Group Fieldset -->
+        <fieldset>
+          <legend>Preferred Response Method</legend>
+
+          <div>
+            <input type="radio" id="pref-email" name="preferred_contact" value="email" checked>
+            <label for="pref-email">Email</label>
+          </div>
+
+          <div>
+            <input type="radio" id="pref-phone" name="preferred_contact" value="phone">
+            <label for="pref-phone">Phone</label>
+          </div>
+        </fieldset>
+
+        <!-- Checkbox -->
+        <div>
+          <input type="checkbox" id="data-consent" name="consent" required aria-required="true">
+          <label for="data-consent">
+            I agree to allow my details to be processed for contact purposes. <span aria-hidden="true">*</span>
+          </label>
+        </div>
+
+        <!-- Submit Button -->
+        <div>
+          <button type="submit">Send Message</button>
+        </div>
+
+      </form>
+    </section>
+
+    <!-- Direct Contact Address Landmark -->
+    <section aria-labelledby="direct-contact-heading">
+      <h2 id="direct-contact-heading">Direct Details</h2>
+      <address>
+        <p>Location: Bengaluru, Karnataka, India</p>
+      </address>
+    </section>
+
+  </main>
+
+  <!-- Footer Landmark -->
+  <footer role="contentinfo">
+    <nav aria-label="Footer Social Links">
+      <ul>
+        <li><a href="https://github.com" rel="external noopener noreferrer" target="_blank" aria-label="GitHub Profile (opens in a new tab)">GitHub</a></li>
+        <li><a href="https://linkedin.com" rel="external noopener noreferrer" target="_blank" aria-label="LinkedIn Profile (opens in a new tab)">LinkedIn</a></li>
+      </ul>
+    </nav>
+    <p><small>&copy; <time datetime="2026">2026</time> Gagana N M. All rights reserved.</small></p>
+  </footer>
+
+</body>
+</html>

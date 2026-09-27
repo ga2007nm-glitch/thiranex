@@ -1,0 +1,9 @@
+# QA scratch files — throwaway browser-automation scripts and screenshots
+# produced while testing pages locally. Not part of the site.
+.qa-*.mjs
+.qa-shots/
+
+# OS / editor cruft
+Thumbs.db
+desktop.ini
+.DS_Store

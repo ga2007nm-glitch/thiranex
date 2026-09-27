@@ -1,0 +1,1919 @@
+/* ==========================================================================
+   GAGANA N M — PORTFOLIO STYLESHEET
+   Architecture:
+     1.  Design Tokens (custom properties) + Light/Dark theme
+     2.  Base & Accessibility styles
+     3.  Navigation & Header (Flexbox)
+     4.  Main content & page shell (CSS Grid)
+     5.  Page-specific components (hero, cards, forms, timeline)
+     6.  Footer
+     7.  Responsive breakpoints (mobile-first)
+     8.  User preferences (reduced motion, print)
+   ========================================================================== */
+
+/* ==========================================================================
+   1. DESIGN TOKENS — CUSTOM PROPERTIES
+   Every colour, size, radius and easing used below is declared once here,
+   which is what makes runtime theme switching a single-attribute change.
+   ========================================================================== */
+
+:root {
+  /* Tells the UA which palette form controls & scrollbars should use */
+  color-scheme: dark;
+
+  /* --- Brand accent (theme-independent hue, derived shades) --- */
+  --brand-hue: 162;
+  --accent: hsl(var(--brand-hue) 84% 40%);
+  --accent-hover: hsl(var(--brand-hue) 84% 48%);
+  --accent-soft: hsl(var(--brand-hue) 84% 40% / 0.14);
+  --accent-glow: hsl(var(--brand-hue) 84% 45% / 0.35);
+  --accent-contrast: #ffffff;
+
+  /* --- Surfaces (dark defaults) --- */
+  --bg-primary: #070b14;
+  --bg-secondary: #0f1626;
+  --bg-surface: #1b2438;
+  --bg-elevated: #141d30;
+  --glass: rgb(15 22 38 / 0.72);
+  --border-color: #1f2b42;
+  --border-strong: #2c3a56;
+
+  /* --- Text --- */
+  --text-primary: #f3f6fb;
+  --text-secondary: #9aa7bd;
+  --text-muted: #6b7891;
+
+  /* Typography & Layout */
+  --font-main: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  --max-width: 1200px;
+  --gutter: clamp(1rem, 0.5rem + 2.5vw, 2.5rem);
+
+  /* Fluid type scale — scales smoothly between mobile and desktop
+     with no breakpoint required (min, preferred, max) */
+  --step-0: clamp(0.95rem, 0.9rem + 0.25vw, 1.0625rem);
+  --step-1: clamp(1.125rem, 1.05rem + 0.4vw, 1.3125rem);
+  --step-2: clamp(1.4rem, 1.2rem + 0.9vw, 1.875rem);
+  --step-3: clamp(1.85rem, 1.4rem + 2.1vw, 3rem);
+  --step-4: clamp(2.2rem, 1.5rem + 3.4vw, 4rem);
+
+  /* Spacing scale */
+  --space-xs: 0.375rem;
+  --space-sm: 0.75rem;
+  --space-md: 1.25rem;
+  --space-lg: 2rem;
+  --space-xl: clamp(2.5rem, 1.5rem + 4vw, 5rem);
+
+  /* Utilities */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1.5rem;
+  --radius-pill: 999px;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+  --ring: 0 0 0 3px var(--accent-soft);
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --transition: all 0.3s var(--ease);
+
+  /* --- Priority semantics (shared by the task manager) --- */
+  --priority-high: hsl(0 72% 51%);
+  --priority-high-soft: hsl(0 72% 51% / 0.16);
+  --priority-medium: hsl(38 92% 50%);
+  --priority-medium-soft: hsl(38 92% 50% / 0.16);
+  --priority-low: hsl(199 89% 48%);
+  --priority-low-soft: hsl(199 89% 48% / 0.16);
+
+  --danger: hsl(0 72% 51%);
+  --danger-soft: hsl(0 72% 51% / 0.14);
+}
+
+/* ==========================================================================
+   1b. LIGHT THEME
+   Two routes, both driven purely by swapping custom-property values:
+     a) Automatic  -> the OS/browser `prefers-color-scheme` media feature
+     b) Manual     -> [data-theme="light"] set on <html> by the toggle button
+   ========================================================================== */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme='dark']) {
+    color-scheme: light;
+
+    --accent: hsl(var(--brand-hue) 78% 30%);
+    --accent-hover: hsl(var(--brand-hue) 78% 24%);
+    --accent-soft: hsl(var(--brand-hue) 78% 30% / 0.1);
+    --accent-glow: hsl(var(--brand-hue) 78% 40% / 0.25);
+
+    --bg-primary: #f6f8fb;
+    --bg-secondary: #ffffff;
+    --bg-surface: #eef2f8;
+    --bg-elevated: #ffffff;
+    --glass: rgb(255 255 255 / 0.78);
+    --border-color: #dde5ef;
+    --border-strong: #c3cfdf;
+
+    --text-primary: #0d1727;
+    --text-secondary: #4a5a73;
+    --text-muted: #66748c;
+
+    --shadow-sm: 0 1px 2px 0 rgba(30, 50, 90, 0.12);
+    --shadow-md: 0 4px 6px -1px rgba(30, 50, 90, 0.16);
+    --shadow-lg: 0 10px 15px -3px rgba(30, 50, 90, 0.22);
+  }
+}
+
+/* Manual override — always wins over the system preference */
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  --accent: hsl(var(--brand-hue) 78% 30%);
+  --accent-hover: hsl(var(--brand-hue) 78% 24%);
+  --accent-soft: hsl(var(--brand-hue) 78% 30% / 0.1);
+  --accent-glow: hsl(var(--brand-hue) 78% 40% / 0.25);
+
+  --bg-primary: #f6f8fb;
+  --bg-secondary: #ffffff;
+  --bg-surface: #eef2f8;
+  --bg-elevated: #ffffff;
+  --glass: rgb(255 255 255 / 0.78);
+  --border-color: #dde5ef;
+  --border-strong: #c3cfdf;
+
+  --text-primary: #0d1727;
+  --text-secondary: #4a5a73;
+  --text-muted: #66748c;
+
+  /* Darker priority shades so they hold AA contrast on white */
+  --priority-high: hsl(0 72% 42%);
+  --priority-medium: hsl(32 90% 36%);
+  --priority-low: hsl(205 90% 34%);
+  --danger: hsl(0 72% 42%);
+
+  --shadow-sm: 0 1px 2px 0 rgba(30, 50, 90, 0.12);
+  --shadow-md: 0 4px 6px -1px rgba(30, 50, 90, 0.16);
+  --shadow-lg: 0 10px 15px -3px rgba(30, 50, 90, 0.22);
+}
+
+/* Mirror that palette when light mode is chosen automatically by the OS */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme='dark']) {
+    --priority-high: hsl(0 72% 42%);
+    --priority-medium: hsl(32 90% 36%);
+    --priority-low: hsl(205 90% 34%);
+    --danger: hsl(0 72% 42%);
+  }
+}
+
+/* ==========================================================================
+   2. BASE & ACCESSIBILITY STYLES
+   ========================================================================== */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  scrollbar-gutter: stable;
+  font-size: 100%;
+}
+
+body {
+  font-family: var(--font-main);
+  font-size: var(--step-0);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.65;
+  min-height: 100vh;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+
+  /* Advanced: layered radial "mesh" gradient for depth, pinned to viewport */
+  background-image:
+    radial-gradient(60rem 40rem at 12% -10%, var(--accent-soft), transparent 60%),
+    radial-gradient(50rem 35rem at 95% 0%, hsl(215 90% 55% / 0.10), transparent 55%);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+
+  transition: background-color var(--transition), color var(--transition);
+}
+
+/* Text gradient utility: paints text with a gradient via background-clip */
+.gradient-text {
+  background-image: linear-gradient(
+    100deg,
+    var(--text-primary) 20%,
+    var(--accent) 85%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Accessibility: Skip Link & Focus States */
+.skip-link {
+  position: absolute;
+  top: -100px;
+  left: 1rem;
+  background: var(--accent);
+  color: #ffffff;
+  padding: 0.75rem 1.25rem;
+  z-index: 1000;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  text-decoration: none;
+  transition: top 0.2s ease;
+}
+
+.skip-link:focus {
+  top: 1rem;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent-hover);
+  outline-offset: 4px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Base Elements */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  border-radius: var(--radius-md);
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+  text-underline-offset: 0.2em;
+  transition: var(--transition);
+}
+
+a:hover {
+  color: var(--accent-hover);
+}
+
+ul {
+  list-style: none;
+}
+
+/* Fluid, balanced headings */
+h1,
+h2,
+h3 {
+  line-height: 1.15;
+  text-wrap: balance;
+  letter-spacing: -0.02em;
+}
+
+h1 {
+  font-size: var(--step-4);
+  margin-bottom: var(--space-md);
+}
+
+h3 {
+  font-size: var(--step-1);
+  margin-bottom: var(--space-xs);
+}
+
+/* Heading rhythm on text blocks */
+main > header p,
+section > p {
+  color: var(--text-secondary);
+}
+
+/* ==========================================================================
+   3. NAVIGATION & HEADER
+   ========================================================================== */
+header[role="banner"] {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background-color: var(--glass);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  backdrop-filter: blur(14px) saturate(160%);
+  border-bottom: 1px solid var(--border-color);
+  padding: 0.85rem var(--gutter);
+  transition: background-color var(--transition), border-color var(--transition);
+}
+
+/* Flexbox: logo left, nav links right, toggle pinned at the end */
+nav[aria-label="Main Navigation"] {
+  max-width: var(--max-width);
+  margin-inline: auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+
+nav[aria-label="Main Navigation"] > a:hover {
+  text-decoration: none;
+}
+
+nav[aria-label="Main Navigation"] strong {
+  font-size: var(--step-1);
+  letter-spacing: -0.02em;
+}
+
+nav[aria-label="Main Navigation"] ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(0.85rem, 0.2rem + 1.6vw, 1.75rem);
+  align-items: center;
+}
+
+/* Nav links carry an animated ::after underline indicator */
+nav[aria-label="Main Navigation"] ul a {
+  position: relative;
+  display: inline-block;
+  padding-block: 0.15rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+nav[aria-label="Main Navigation"] ul a::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -0.15rem;
+  width: 100%;
+  height: 2px;
+  border-radius: var(--radius-pill);
+  background-color: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform var(--transition);
+}
+
+nav[aria-label="Main Navigation"] ul a:hover,
+nav[aria-label="Main Navigation"] ul a[aria-current="page"] {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+nav[aria-label="Main Navigation"] ul a:hover::after,
+nav[aria-label="Main Navigation"] ul a[aria-current="page"]::after {
+  transform: scaleX(1);
+}
+
+nav[aria-label="Main Navigation"] ul a[aria-current="page"] {
+  font-weight: 600;
+}
+
+/* --- Theme toggle: Flexbox centering inside a fixed-size pill --- */
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  flex: 0 0 auto;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+  color: var(--text-primary);
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+}
+
+.theme-toggle:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.theme-toggle:active {
+  transform: translateY(0);
+}
+
+.theme-toggle .icon {
+  display: block;
+  width: 1.15rem;
+  height: 1.15rem;
+  transition: transform 0.5s var(--ease);
+}
+
+.theme-toggle:hover .icon {
+  transform: rotate(25deg) scale(1.08);
+}
+
+/* Swap the painted icon according to the resolved theme */
+.theme-toggle .icon-moon,
+:root[data-theme="light"] .theme-toggle .icon-sun {
+  display: none;
+}
+
+:root[data-theme="light"] .theme-toggle .icon-moon {
+  display: block;
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) .theme-toggle .icon-sun,
+  :root:not([data-theme="dark"]) .theme-toggle .icon-moon {
+    display: none;
+  }
+
+  :root:not([data-theme="dark"]) .theme-toggle .icon-moon {
+    display: block;
+  }
+}
+
+/* ==========================================================================
+   4. MAIN CONTENT & PAGE SHELL
+   `main` is a CSS Grid container: mobile shows a single column, and from the
+   tablet breakpoint upward it becomes a two-dimensional content + sidebar grid.
+   ========================================================================== */
+main {
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: var(--max-width);
+  margin-inline: auto;
+  padding: var(--space-xl) var(--gutter) var(--space-lg);
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-xl);
+  align-content: start;
+}
+
+/* Prevents long content from blowing out grid tracks */
+section,
+article {
+  min-width: 0;
+}
+
+h2 {
+  font-size: var(--step-2);
+  margin-bottom: var(--space-lg);
+  position: relative;
+  display: inline-block;
+  padding-bottom: 0.5rem;
+}
+
+h2::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 3.5rem;
+  height: 4px;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(90deg, var(--accent), transparent);
+}
+
+/* ==========================================================================
+   5. PAGE-SPECIFIC COMPONENTS
+   ========================================================================== */
+
+/* --- Hero Section: Flexbox column, centered on the block axis --- */
+section[aria-labelledby="hero-heading"] {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: var(--space-md);
+  min-height: 55svh;
+  padding: clamp(1.5rem, 1rem + 3vw, 3.5rem);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  background: linear-gradient(150deg, var(--bg-secondary), var(--bg-primary) 72%);
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Advanced: decorative glow generated purely in CSS (no image asset) */
+section[aria-labelledby="hero-heading"]::before {
+  content: '';
+  position: absolute;
+  inset: auto -15% -55% 35%;
+  height: 26rem;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--accent-glow), transparent 65%);
+  filter: blur(8px);
+  pointer-events: none;
+}
+
+/* Lifts every direct child above the decorative glow layer */
+section[aria-labelledby="hero-heading"] > * {
+  position: relative;
+}
+
+section[aria-labelledby="hero-heading"] p {
+  font-size: var(--step-1);
+  color: var(--text-secondary);
+  max-width: 62ch;
+}
+
+section[aria-labelledby="hero-heading"] > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  margin-top: var(--space-sm);
+}
+
+/* --- Shared button component (Flexbox-centered label) --- */
+:is(section[aria-labelledby="hero-heading"] a, .btn, button[type="submit"]) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.8rem 1.6rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  font-family: inherit;
+  font-size: var(--step-0);
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  background-color: var(--accent);
+  color: var(--accent-contrast);
+  box-shadow: 0 8px 20px -12px var(--accent-glow);
+  transition: var(--transition);
+}
+
+:is(section[aria-labelledby="hero-heading"] a, .btn, button[type="submit"]):hover {
+  background-color: var(--accent-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 14px 28px -12px var(--accent-glow);
+  text-decoration: none;
+}
+
+/* Secondary / ghost variant for the second hero action */
+section[aria-labelledby="hero-heading"] a:nth-of-type(2) {
+  background-color: transparent;
+  border-color: var(--border-strong);
+  color: var(--text-primary);
+  box-shadow: none;
+}
+
+section[aria-labelledby="hero-heading"] a:nth-of-type(2):hover {
+  background-color: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* --- Project grids: CSS Grid, 1 column on mobile --- */
+section[aria-labelledby="featured-projects-heading"] > div,
+section[aria-labelledby="all-projects-heading"] {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-lg);
+}
+
+/* --- Project card: Flexbox column so the footer pins to the bottom --- */
+article {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  padding: clamp(1.25rem, 1rem + 1vw, 1.75rem);
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+  transition: var(--transition);
+}
+
+/* Advanced: gradient hairline border that fades in on hover, drawn with a
+   mask-composite so only the 1px padding ring is painted */
+article::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(140deg, var(--accent), transparent 55%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition);
+}
+
+article:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-lg);
+}
+
+article:hover::after {
+  opacity: 1;
+}
+
+article header p,
+article header small {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+article figure {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+article figure img {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  border: 1px solid var(--border-color);
+  transition: transform 0.5s var(--ease);
+}
+
+article:hover figure img {
+  transform: scale(1.03);
+}
+
+article figcaption {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+article > p {
+  color: var(--text-secondary);
+}
+
+/* Technology chips, laid out with wrapping Flexbox */
+article ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+article ul li {
+  background-color: var(--accent-soft);
+  color: var(--accent);
+  border: 1px solid var(--border-color);
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+/* `margin-block-start: auto` pushes the actions to the card bottom */
+article footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-md);
+  margin-block-start: auto;
+  padding-block-start: var(--space-md);
+  border-top: 1px solid var(--border-color);
+  background: transparent;
+}
+
+article footer a {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+section[aria-labelledby="featured-projects-heading"] > footer {
+  margin-top: var(--space-lg);
+}
+
+/* --- Competencies definition list --- */
+dl {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-md);
+}
+
+dt {
+  font-weight: 700;
+  color: var(--accent);
+  font-size: var(--step-1);
+}
+
+dd {
+  color: var(--text-secondary);
+  margin-top: 0.25rem;
+}
+
+/* --- Sidebar highlight --- */
+aside[aria-label="Recent Highlights"] {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  padding: clamp(1.25rem, 1rem + 1.5vw, 2rem);
+  background: linear-gradient(135deg, var(--bg-secondary), var(--bg-elevated));
+  border: 1px solid var(--border-color);
+  border-left: 4px solid var(--accent);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+aside[aria-label="Recent Highlights"] h2 {
+  font-size: var(--step-1);
+  margin-bottom: var(--space-xs);
+}
+
+aside[aria-label="Recent Highlights"] h2::after {
+  background: linear-gradient(90deg, var(--accent), transparent);
+}
+
+aside[aria-label="Recent Highlights"] p {
+  color: var(--text-secondary);
+}
+
+/* --- ABOUT PAGE (about.html) --- */
+section[aria-labelledby="bio-heading"] {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+section[aria-labelledby="bio-heading"] figure {
+  flex: 0 0 auto;
+  margin: 0;
+}
+
+section[aria-labelledby="bio-heading"] img {
+  width: clamp(9rem, 32vw, 12rem);
+  height: clamp(9rem, 32vw, 12rem);
+  object-fit: cover;
+  border-radius: 50%;
+  border: 3px solid var(--accent);
+  /* Layered box-shadow ring creates the halo without extra markup */
+  box-shadow: 0 0 0 8px var(--accent-soft), var(--shadow-lg);
+}
+
+section[aria-labelledby="bio-heading"] p {
+  color: var(--text-secondary);
+  max-width: 68ch;
+}
+
+section[aria-labelledby="education-heading"] ul,
+section[aria-labelledby="achievements-heading"] ul {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-md);
+}
+
+section[aria-labelledby="education-heading"] li,
+section[aria-labelledby="achievements-heading"] li {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  color: var(--text-secondary);
+  transition: var(--transition);
+}
+
+section[aria-labelledby="education-heading"] li:hover,
+section[aria-labelledby="achievements-heading"] li:hover {
+  transform: translateX(4px);
+  box-shadow: var(--shadow-md);
+}
+
+section[aria-labelledby="education-heading"] li strong,
+section[aria-labelledby="achievements-heading"] li strong {
+  color: var(--text-primary);
+}
+
+/* --- PROJECTS PAGE (project.html) --- */
+section[aria-labelledby="all-projects-heading"] {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-lg);
+}
+
+/* --- CONTACT PAGE (contact.html) --- */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  padding: clamp(1.25rem, 1rem + 2vw, 2.5rem);
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+}
+
+form > div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+form span small,
+form > p small {
+  color: var(--text-muted);
+}
+
+label {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+input[type="text"],
+input[type="email"],
+select,
+textarea {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: var(--step-0);
+  transition: var(--transition);
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: var(--ring);
+}
+
+textarea {
+  resize: vertical;
+  min-height: 8rem;
+}
+
+select {
+  cursor: pointer;
+}
+
+fieldset {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+}
+
+legend {
+  padding-inline: 0.5rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+/* Radio / checkbox rows: horizontal Flexbox alignment */
+fieldset > div,
+form > div:has(input[type="checkbox"]) {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+input[type="radio"],
+input[type="checkbox"] {
+  width: 1.15rem;
+  height: 1.15rem;
+  flex: 0 0 auto;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+fieldset label,
+form > div:has(input[type="checkbox"]) label {
+  font-weight: 500;
+  cursor: pointer;
+}
+
+/* Live region shell — only draws a panel when a message exists */
+#form-status {
+  border-radius: var(--radius-md);
+}
+
+#form-status:not(:empty) {
+  padding: var(--space-md);
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-surface);
+}
+
+address {
+  font-style: normal;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md);
+  color: var(--text-secondary);
+}
+
+/* ==========================================================================
+   6. FOOTER
+   ========================================================================== */
+footer[role="contentinfo"] {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-md);
+  margin-top: auto;
+  padding: var(--space-lg) var(--gutter);
+  background-color: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+  color: var(--text-muted);
+}
+
+footer[role="contentinfo"] ul {
+  display: flex;
+  gap: var(--space-lg);
+}
+
+footer[role="contentinfo"] a {
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   6b. TASK MANAGER (todo.html)
+   The page reuses the shared tokens, panels, buttons and form controls, so
+   only the parts unique to a task list are defined here.
+   ========================================================================== */
+
+/* --- Page intro ---------------------------------------------------------- */
+.page-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  max-width: 72ch;
+}
+
+.page-header > p {
+  color: var(--text-secondary);
+}
+
+.page-header code {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 0.9em;
+  padding: 0.15em 0.45em;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background-color: var(--accent-soft);
+  color: var(--accent);
+}
+
+.eyebrow {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: calc(var(--space-sm) * -1 + 0.35rem);
+}
+
+/* --- Panels -------------------------------------------------------------- */
+.todo-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  padding: clamp(1.25rem, 1rem + 1.5vw, 2rem);
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+}
+
+.todo-panel h2 {
+  margin-bottom: var(--space-sm);
+}
+
+/* --- Create form: Grid on wide screens, stacked on mobile ---------------- */
+.todo-form {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-md);
+  padding: 0;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.todo-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.field-hint {
+  color: var(--text-muted);
+}
+
+/* --- Toolbar: filters on the left, bulk action on the right -------------- */
+.todo-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  padding-bottom: var(--space-md);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.filter-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding: 0.3rem;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-pill);
+}
+
+.filter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 1rem;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--text-secondary);
+  background: none;
+  border: 0;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.filter-btn:hover {
+  color: var(--text-primary);
+  background-color: var(--accent-soft);
+}
+
+.filter-btn.is-active {
+  color: var(--accent-contrast);
+  background-color: var(--accent);
+  box-shadow: 0 6px 16px -10px var(--accent-glow);
+}
+
+/* Count badge inside each filter button */
+.filter-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.4rem;
+  padding: 0.05rem 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  border-radius: var(--radius-pill);
+  background-color: color-mix(in srgb, currentColor 18%, transparent);
+}
+
+/* --- Small + ghost button modifiers (extend the shared .btn) ------------- */
+.btn--sm {
+  padding: 0.5rem 1.1rem;
+  font-size: 0.88rem;
+}
+
+.btn--ghost {
+  color: var(--text-primary);
+  background-color: transparent;
+  border-color: var(--border-strong);
+  box-shadow: none;
+}
+
+.btn--ghost:hover {
+  color: var(--accent);
+  background-color: var(--accent-soft);
+  border-color: var(--accent);
+}
+
+.btn:disabled,
+.btn--ghost:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  color: var(--text-muted);
+  background-color: transparent;
+  border-color: var(--border-color);
+}
+
+/* --- Task list ---------------------------------------------------------- */
+.todo-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.todo-item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border-color);
+  border-left: 3px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  transition: var(--transition);
+}
+
+.todo-item:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Priority stripe doubles as a visual sort cue */
+.todo-item[data-priority='high'] { border-left-color: var(--priority-high); }
+.todo-item[data-priority='medium'] { border-left-color: var(--priority-medium); }
+.todo-item[data-priority='low'] { border-left-color: var(--priority-low); }
+
+.todo-item.is-completed {
+  background-color: var(--bg-surface);
+}
+
+.todo-item.is-completed .todo-text {
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
+
+/* Checkbox */
+.todo-check {
+  width: 1.3rem;
+  height: 1.3rem;
+  margin-top: 0.15rem;
+  flex: 0 0 auto;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.todo-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.todo-text {
+  font-weight: 500;
+  color: var(--text-primary);
+  cursor: text;
+  /* Wrap at spaces first; only break inside a word when a single word is
+     genuinely too long for the column (e.g. a pasted URL). `anywhere` alone
+     breaks ordinary words mid-syllable on narrow screens. */
+  overflow-wrap: break-word;
+  word-break: normal;
+  hyphens: none;
+  transition: color var(--transition);
+}
+
+.todo-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.priority-tag {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.1rem 0.5rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid currentColor;
+}
+
+.priority-tag--high { color: var(--priority-high); background-color: var(--priority-high-soft); }
+.priority-tag--medium { color: var(--priority-medium); background-color: var(--priority-medium-soft); }
+.priority-tag--low { color: var(--priority-low); background-color: var(--priority-low-soft); }
+
+/* Row actions */
+.todo-actions {
+  display: flex;
+  gap: 0.35rem;
+  flex: 0 0 auto;
+}
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  padding: 0;
+  color: var(--text-secondary);
+  background-color: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.icon-btn svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.icon-btn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  background-color: var(--accent-soft);
+}
+
+.icon-btn--danger:hover {
+  color: var(--danger);
+  border-color: var(--danger);
+  background-color: var(--danger-soft);
+}
+
+/* --- Inline editor ------------------------------------------------------ */
+.todo-item.is-editing {
+  grid-template-columns: 1fr;
+  border-left-color: var(--accent);
+}
+
+.todo-edit {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-sm);
+}
+
+.todo-edit-input,
+.todo-edit-priority {
+  width: 100%;
+  padding: 0.6rem 0.85rem;
+  font: inherit;
+  font-size: var(--step-0);
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  transition: var(--transition);
+}
+
+.todo-edit-input:focus,
+.todo-edit-priority:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: var(--ring);
+}
+
+.todo-edit .btn {
+  grid-column: 1 / -1;
+  justify-self: start;
+}
+
+/* --- Empty state -------------------------------------------------------- */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding: var(--space-xl) var(--space-md);
+  text-align: center;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-lg);
+  background-color: var(--bg-elevated);
+}
+
+.empty-state[hidden] {
+  display: none; /* keeps the flex layout from overriding the hidden attribute */
+}
+
+.empty-state p:first-child {
+  font-size: var(--step-1);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.empty-state p:last-child {
+  color: var(--text-muted);
+}
+
+/* --- Live feedback ------------------------------------------------------ */
+.list-summary {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.form-status {
+  min-height: 1.25rem;
+  font-size: 0.9rem;
+  color: var(--accent);
+}
+
+.form-status.is-error {
+  color: var(--danger);
+}
+
+/* ==========================================================================
+   7. RESPONSIVE BREAKPOINTS (Mobile-First)
+   Everything above is authored for the smallest screen; each media query
+   only adds or reshapes for larger viewports.
+   ========================================================================== */
+
+/* --- 1. Large phones / small tablets (640px and up) ---------------------- */
+@media (min-width: 40rem) {
+  /* Two-up card grid */
+  section[aria-labelledby="featured-projects-heading"] > div {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* Contact form becomes a two-column Grid; wide fields span both tracks */
+  form {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+
+  form > p,
+  form > div:has(textarea),
+  form > div:has(input[type="checkbox"]),
+  form > div:has(button[type="submit"]) {
+    grid-column: 1 / -1;
+  }
+
+  /* Task creator: description grows, priority and button sit beside it */
+  .todo-form {
+    grid-template-columns: minmax(0, 1fr) 9rem auto;
+    align-items: start;
+  }
+
+  /* Editor: field, priority and controls on one line */
+  .todo-edit {
+    grid-template-columns: minmax(0, 1fr) 9rem auto auto;
+    align-items: center;
+  }
+
+  .todo-edit .btn {
+    grid-column: auto;
+  }
+}
+
+/* --- 2. Tablets (768px and up) ------------------------------------------ */
+@media (min-width: 48rem) {
+  /* Two-dimensional page shell.
+     Only the home page has a sidebar, so it is the presence of the skills
+     section that switches `main` into a content + sidebar grid. Every other
+     page keeps the single full-width column and the gap above is all it needs. */
+  main:has(section[aria-labelledby="skills-heading"]) {
+    grid-template-columns: minmax(0, 2.15fr) minmax(0, 1fr);
+    align-items: start;
+  }
+
+  /* Hero and featured work span the full grid width */
+  section[aria-labelledby="hero-heading"],
+  section[aria-labelledby="featured-projects-heading"] {
+    grid-column: 1 / -1;
+  }
+
+  /* Skills occupy the left column of the final row */
+  section[aria-labelledby="skills-heading"] {
+    grid-column: 1 / 2;
+  }
+
+  /* The sidebar takes the right column and sticks while the page scrolls */
+  aside[aria-label="Recent Highlights"] {
+    grid-column: 2 / 3;
+    position: sticky;
+    top: 5.5rem;
+  }
+
+  /* Competencies pair into two columns with a rule between term and body */
+  dl {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-lg);
+  }
+
+  dd {
+    border-left: 2px solid var(--border-color);
+    padding-left: var(--space-md);
+    margin-top: 0.5rem;
+  }
+
+  /* About: list panels go two-up, bio goes side-by-side */
+  section[aria-labelledby="education-heading"] ul,
+  section[aria-labelledby="achievements-heading"] ul {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  section[aria-labelledby="bio-heading"] {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--space-lg);
+  }
+
+  /* Footer switches to a single Flexbox row */
+  footer[role="contentinfo"] {
+    flex-direction: row;
+    justify-content: space-between;
+    max-width: var(--max-width);
+    width: 100%;
+    margin-inline: auto;
+  }
+}
+
+/* --- 3. Desktop (1024px and up) ----------------------------------------- */
+@media (min-width: 64rem) {
+  /* Projects page: three-column card wall */
+  section[aria-labelledby="all-projects-heading"] {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-xl) var(--space-lg);
+  }
+}
+
+/* --- 4. Wide desktop (1280px and up) ------------------------------------ */
+@media (min-width: 80rem) {
+  :root {
+    --gutter: 2.5rem;
+  }
+}
+
+/* ==========================================================================
+   8. USER PREFERENCES
+   ========================================================================== */
+
+/* Respect reduced-motion requests: keep the UI but drop all movement */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  article:hover,
+  :is(section[aria-labelledby="hero-heading"] a, .btn, button[type="submit"]):hover,
+  section[aria-labelledby="education-heading"] li:hover,
+  section[aria-labelledby="achievements-heading"] li:hover {
+    transform: none;
+  }
+}
+
+/* Print: strip chrome and backgrounds, keep the content readable */
+@media print {
+  header[role="banner"],
+  aside[aria-label="Recent Highlights"],
+  .theme-toggle,
+  .skip-link {
+    display: none;
+  }
+
+  body {
+    background: #fff;
+    color: #000;
+  }
+
+  article {
+    break-inside: avoid;
+    box-shadow: none;
+  }
+}/* ==========================================================================
+   9. WEATHER DASHBOARD
+   Async JavaScript / REST API demo. Reuses the design tokens above, so the
+   dashboard inherits both themes without a single hard-coded colour.
+   ========================================================================== */
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.weather-source a {
+  color: var(--accent);
+}
+
+/* --- Panel shell --------------------------------------------------------- */
+.weather-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  padding: var(--space-lg);
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.weather-panel h2 {
+  font-size: var(--step-1);
+}
+
+/* --- Search form --------------------------------------------------------- */
+.weather-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-sm);
+  align-items: start;
+}
+
+.weather-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.weather-field label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.weather-field input {
+  width: 100%;
+  padding: 0.7rem 0.9rem;
+  font: inherit;
+  font-size: var(--step-0);
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  transition: var(--transition);
+}
+
+.weather-field input::placeholder {
+  color: var(--text-muted);
+}
+
+.weather-field input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: var(--ring);
+}
+
+/* --- Recent city chips --------------------------------------------------- */
+.weather-recent {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.weather-recent[hidden] {
+  display: none;
+}
+
+.weather-recent__label {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.weather-recent__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.chip {
+  padding: 0.3rem 0.75rem;
+  font: inherit;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  background-color: var(--accent-soft);
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.chip:hover {
+  color: var(--accent-contrast);
+  background-color: var(--accent);
+  border-color: var(--accent);
+}
+
+/* --- Loading ------------------------------------------------------------- */
+.weather-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-xl) var(--space-md);
+  color: var(--text-secondary);
+}
+
+.weather-loading[hidden] {
+  display: none;
+}
+
+.spinner {
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 3px solid var(--border-strong);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: weather-spin 0.8s linear infinite;
+}
+
+@keyframes weather-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* --- Error --------------------------------------------------------------- */
+.weather-error {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.4rem;
+  padding: var(--space-md);
+  border: 1px solid var(--danger);
+  border-left-width: 4px;
+  border-radius: var(--radius-md);
+  background-color: var(--danger-soft);
+}
+
+.weather-error[hidden] {
+  display: none;
+}
+
+.weather-error h3 {
+  font-size: var(--step-1);
+  color: var(--danger);
+}
+
+.weather-error p {
+  color: var(--text-secondary);
+}
+
+/* --- Result card --------------------------------------------------------- */
+.weather-result {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.weather-result[hidden] {
+  display: none;
+}
+
+/* Location + big temperature */
+.weather-hero {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  background: linear-gradient(135deg, var(--accent-soft), transparent 70%);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+}
+
+.weather-place {
+  font-size: var(--step-2);
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.weather-meta,
+.weather-condition {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.weather-condition {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.weather-hero__temp {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.15rem;
+  text-align: right;
+}
+
+.weather-emoji {
+  font-size: 2.25rem;
+  line-height: 1;
+}
+
+.weather-temp {
+  font-size: var(--step-2);
+  font-weight: 700;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.weather-feels {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* --- Metric grid --------------------------------------------------------- */
+.weather-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: var(--space-sm);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.metric {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: var(--space-sm) var(--space-md);
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+}
+
+.metric__label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.metric__value {
+  font-size: var(--step-1);
+  font-weight: 700;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.metric__sub {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+/* --- Sun strip ----------------------------------------------------------- */
+.weather-sun {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-md);
+}
+
+.sun-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.sun-item__label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.sun-item__value {
+  font-size: var(--step-1);
+  font-weight: 600;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Hourly strip -------------------------------------------------------- */
+.weather-hourly h3 {
+  font-size: var(--step-1);
+  margin-bottom: var(--space-sm);
+}
+
+.hourly-strip {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 5.25rem;
+  gap: 0.5rem;
+  list-style: none;
+  padding: 0 0 0.5rem;
+  margin: 0;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+}
+
+.hourly-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  padding: var(--space-sm) 0.4rem;
+  text-align: center;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  scroll-snap-align: start;
+}
+
+.hourly-item.is-now {
+  border-color: var(--accent);
+  background-color: var(--accent-soft);
+}
+
+.hourly-item--empty {
+  grid-column: 1 / -1;
+  color: var(--text-muted);
+}
+
+.hourly-time {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.hourly-item.is-now .hourly-time {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.hourly-glyph {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.hourly-temp {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.hourly-rain {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  min-height: 1em;
+}
+
+.weather-updated {
+  color: var(--text-muted);
+}
+
+/* --- Dashboard responsive tweaks ----------------------------------------- */
+@media (min-width: 40rem) {
+  /* Field on the left, the two buttons together on the right. The hint text
+     sits inside the field column, so the buttons are centred against the
+     input rather than being pushed down by the hint. */
+  .weather-form {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    align-items: center;
+  }
+
+  .weather-field {
+    align-self: center;
+  }
+
+  /* Reserve one line for the hint so the input does not shift on focus. */
+  .weather-field .field-hint {
+    min-height: 1.15rem;
+  }
+
+  .weather-form button {
+    align-self: center;
+  }
+
+  .weather-hero__temp {
+    align-items: flex-end;
+  }
+}
+
+/* The dashboard is a single column of panels; keep it from stretching too
+   wide on very large displays. */
+@media (min-width: 64rem) {
+  .weather-panel {
+    padding: var(--space-xl);
+  }
+}

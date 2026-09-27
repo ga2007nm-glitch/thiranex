@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Primary Meta Tags -->
+  <title>Task Manager | Gagana N M - JavaScript To-Do Application</title>
+  <meta name="title" content="Task Manager | Gagana N M - JavaScript To-Do Application">
+  <meta name="description" content="An interactive, client-side task management application built with vanilla JavaScript, DOM manipulation, event delegation, and localStorage persistence.">
+  <meta name="keywords" content="JavaScript To-Do List, CRUD, localStorage, DOM Manipulation, Event Delegation, State Management">
+  <meta name="author" content="Gagana N M">
+  <meta name="robots" content="index, follow">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://www.gagananm.dev/todo.html">
+  <meta property="og:title" content="Task Manager | Gagana N M">
+  <meta property="og:description" content="A state-driven task manager with full CRUD, filtering, and offline persistence.">
+
+  <!-- Canonical URL -->
+  <link rel="canonical" href="https://www.gagananm.dev/todo.html">
+
+  <link rel="stylesheet" href="style.css">
+  <!--
+    Theme boot: resolves the saved theme (or the OS preference) BEFORE first
+    paint so the page never flashes the wrong palette. Kept inline and tiny
+    on purpose — an external file here would re-introduce the flash.
+  -->
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('theme');
+        var prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+        document.documentElement.setAttribute('data-theme', saved || (prefersLight ? 'light' : 'dark'));
+      } catch (e) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+  </script>
+</head>
+<body>
+
+  <!-- Skip Link -->
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <!-- Header Landmark -->
+  <header role="banner">
+    <nav aria-label="Main Navigation">
+      <a href="index.html">
+        <strong>Gagana N M</strong>
+      </a>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="project.html">Projects</a></li>
+        <li><a href="todo.html" aria-current="page">Task Manager</a></li>
+        <li><a href="weather.html">Weather</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+
+      <!-- Light / dark mode switch -->
+      <button type="button" class="theme-toggle" id="theme-toggle"
+        aria-label="Switch to light theme" aria-pressed="false" title="Toggle colour theme">
+        <svg class="icon icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false">
+          <circle cx="12" cy="12" r="4.5"></circle>
+          <path d="M12 1.5v2.5M12 20v2.5M4.2 4.2l1.8 1.8M18 18l1.8 1.8M1.5 12H4M20 12h2.5M4.2 19.8L6 18M18 6l1.8-1.8"></path>
+        </svg>
+        <svg class="icon icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+          <path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.6 6.6 0 0 0 9.8 9.8z"></path>
+        </svg>
+      </button>
+    </nav>
+  </header>
+
+  <!-- Main Content Landmark -->
+  <main id="main-content" tabindex="-1">
+
+    <header class="page-header">
+      <p class="eyebrow">JavaScript Logic &amp; State Management</p>
+      <h1>Task Manager</h1>
+      <p>
+        A state-driven to-do application with full create, read, update and delete
+        support, live filtering, and automatic persistence to
+        <code>window.localStorage</code> — so your tasks survive a page reload.
+      </p>
+    </header>
+
+    <!-- ==================================================================
+         TASK CREATOR (Create)
+         ================================================================== -->
+    <section class="todo-panel" aria-labelledby="create-heading">
+      <h2 id="create-heading">Add a Task</h2>
+
+      <form id="todo-form" class="todo-form" novalidate>
+        <div class="todo-field">
+          <label for="todo-input">Task description</label>
+          <input
+            type="text"
+            id="todo-input"
+            name="task"
+            placeholder="e.g. Review the pull request"
+            autocomplete="off"
+            maxlength="240"
+            aria-describedby="todo-hint"
+          >
+          <span id="todo-hint" class="field-hint">
+            <small>Press Enter or use the button to add. Maximum 240 characters.</small>
+          </span>
+        </div>
+
+        <div class="todo-field todo-field--meta">
+          <label for="todo-priority">Priority</label>
+          <select id="todo-priority" name="priority">
+            <option value="low">Low</option>
+            <option value="medium" selected>Medium</option>
+            <option value="high">High</option>
+          </select>
+        </div>
+
+        <button type="submit" id="todo-submit">Add Task</button>
+      </form>
+
+      <!-- Validation / status announcements for assistive technology -->
+      <p id="form-status" class="form-status" role="status" aria-live="polite" aria-atomic="true"></p>
+    </section>
+
+    <!-- ==================================================================
+         TASK LIST + FILTERS (Read / Update / Delete)
+         ================================================================== -->
+    <section class="todo-panel" aria-labelledby="list-heading">
+      <h2 id="list-heading">Your Tasks</h2>
+
+      <!-- Filters -->
+      <div class="todo-toolbar">
+        <div class="filter-group" role="group" aria-label="Filter tasks by status">
+          <button type="button" class="filter-btn is-active" data-filter="all" aria-pressed="true">
+            All <span class="filter-count" data-count="all">0</span>
+          </button>
+          <button type="button" class="filter-btn" data-filter="active" aria-pressed="false">
+            Active <span class="filter-count" data-count="active">0</span>
+          </button>
+          <button type="button" class="filter-btn" data-filter="completed" aria-pressed="false">
+            Completed <span class="filter-count" data-count="completed">0</span>
+          </button>
+        </div>
+
+        <button type="button" class="btn btn--ghost btn--sm" id="clear-completed">
+          Clear Completed
+        </button>
+      </div>
+
+      <!--
+        The list is rendered entirely from state. The delegated click/keydown
+        listeners live on `#todo-list`, not on individual items, so newly
+        created rows work without re-binding anything.
+      -->
+      <ul id="todo-list" class="todo-list" aria-describedby="list-summary"></ul>
+
+      <!-- Empty state, toggled from JS based on state + active filter -->
+      <div id="empty-state" class="empty-state" hidden>
+        <p id="empty-title">Nothing here yet.</p>
+        <p><small id="empty-detail">Add your first task above to get started.</small></p>
+      </div>
+
+      <p id="list-summary" class="list-summary" role="status" aria-live="polite"></p>
+    </section>
+
+  </main>
+
+  <!-- Footer Landmark -->
+  <footer role="contentinfo">
+    <nav aria-label="Footer Social Links">
+      <ul>
+        <li><a href="https://github.com" rel="external noopener noreferrer" target="_blank" aria-label="GitHub Profile (opens in a new tab)">GitHub</a></li>
+        <li><a href="https://linkedin.com" rel="external noopener noreferrer" target="_blank" aria-label="LinkedIn Profile (opens in a new tab)">LinkedIn</a></li>
+      </ul>
+    </nav>
+    <p><small>&copy; <time datetime="2026">2026</time> Gagana N M. All rights reserved.</small></p>
+  </footer>
+
+  <!-- Theme toggle controller -->
+  <script>
+    (function () {
+      var root = document.documentElement;
+      var toggle = document.getElementById('theme-toggle');
+      if (!toggle) return;
+
+      var media = window.matchMedia('(prefers-color-scheme: light)');
+
+      function sync() {
+        var isDark = root.getAttribute('data-theme') !== 'light';
+        toggle.setAttribute('aria-label', isDark ? 'Switch to light theme' : 'Switch to dark theme');
+        toggle.setAttribute('aria-pressed', isDark ? 'false' : 'true');
+      }
+
+      toggle.addEventListener('click', function () {
+        var next = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+        root.setAttribute('data-theme', next);
+        try { localStorage.setItem('theme', next); } catch (e) {}
+        sync();
+      });
+
+      media.addEventListener('change', function (event) {
+        var saved = null;
+        try { saved = localStorage.getItem('theme'); } catch (e) {}
+        if (!saved) {
+          root.setAttribute('data-theme', event.matches ? 'light' : 'dark');
+          sync();
+        }
+      });
+
+      sync();
+    })();
+  </script>
+
+  <!-- Application logic -->
+  <script src="todo.js"></script>
+
+</body>
+</html>
